@@ -20,7 +20,7 @@ This repo contains Arduino Social display library (header .h file and a .cpp fil
 
 ## Docs
 * Product page ()
-* List of functions and its parameters and returns ()
+* [List of functions and its parameters and returns]
 
 ## How to use this library
 Click on green "Clone or download button", then "Download ZIP", wait while file downloads, open Arduino IDE, then Sketch-> Include Library-> Add ZIP Library and then browse to your ZIP library file that you downloaded.
@@ -32,3 +32,4 @@ After that click on File-> Examples-> Social Display to use examples.
 
 
 [here]: https://github.com/esp8266/Arduino
+[List of functions and its parameters and returns]: https://github.com/BornaBiro/Social_Display/raw/master/Social_Display_Library_Documentation.pdf
