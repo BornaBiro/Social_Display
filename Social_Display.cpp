@@ -25,6 +25,7 @@ void writeMessage() {
   
   if(!_repeats) {                                      //Repeats are not equal zero? Keep screen updated!
     updateLED.detach();
+    return;
   }
   
   matrixL.setCursor(_position, 0);            //Set cursor at the start of the display.
@@ -60,6 +61,7 @@ void writeTextAndPic() {
   
   if(!_repeats) {                                      //Repeats are not equal zero? Keep screen updated!
     updateLED.detach();
+    return;
   }
   
   matrixL.setCursor(_position, 0);            //Set cursor at the start of the display.
@@ -146,6 +148,7 @@ void Social_Display::message(char* msg, int _ms, int _stp, int _rep) {
   matrixL.drawLine(0, 8, 15, 8, _backBrightness);     //Draw line at the end of screen. This is because Adafruit library uses 8x6 pixels for fonts and height of out display is 9 pixels.
   matrixR.drawLine(0, 8, 15, 8, _backBrightness);
   if(!_repeats) {                                     //If repeats are equal to zero, that means that we do not want to scroll it, we just want to print message with picture.
+    _repeats = 1;
     _position = 0;                                    //In that case, set position to start of the screen.
     writeMessage();
   }
@@ -158,7 +161,7 @@ void Social_Display::stopScroll() {        //Function that stops message from sc
 void Social_Display::resumeScroll() {         //Function that resume scrolling message on the screen.         
   if(_dispMode == 1) updateLED.attach_ms(_pause, writeMessage);
   if(_dispMode == 2) updateLED.attach_ms(_pause, writePicture);
-  if(_dispMode == 3) updateLED.attach_ms(_pause, writePicture);
+  if(_dispMode == 3) updateLED.attach_ms(_pause, writeTextAndPic);
 }
 
 void Social_Display::deleteScroll() {                //Function removes message form display and memory.
@@ -249,6 +252,7 @@ void Social_Display::scrollTxtAndPics(char* txt, uint8_t** p, uint16_t* picsPos_
   }
   
   if(!_repeats) {                                          //If repeats are equal to zero, that means that we do not want to scroll it, we just want to print message with picture.
+    _repeats = 1;
     _position = 0;                                         //In that case, set position to start of the screen.
     writeTextAndPic();
   }

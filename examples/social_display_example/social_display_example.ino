@@ -62,7 +62,7 @@ void setup() {
   led.resumeScroll();
   delay(6000);
 
-  //New message has been sent to display, with scroll step of two pixels and delay beetwen steps of 7 miliseconds.
+  //New message has been sent to display, with scroll step of two pixels and delay beetwen steps of 70 miliseconds.
   led.message("LED Matrix says:Hello World", 70, 2, 2);
   delay(6000);
 
