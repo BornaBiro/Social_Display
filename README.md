@@ -1,7 +1,7 @@
 # Social Display Arduino Library
 
 ## Description and details
-This library used to control e-radionica Social Display module equipped with 32x9 LED matrix, ESP2866 with Arduino Bootloader, two IS31FL3731 Charleplexed LED controllers and a lithium battery charger.
+This library used to control e-radionica Social Display module equipped with 32x9 LED matrix, ESP8266 with Arduino Bootloader, two IS31FL3731 Charleplexed LED controllers and a lithium battery charger.
 
 It allows user to display message on screen, scroll it, display 8x8 bitmap image, display both message with bitmap images, connect to WLAN network, open a web page and display web page content on display.
 
