@@ -17,6 +17,7 @@
 #endif
 
 #define _BUFFERSIZE 800                        //Size of buffer for displying messages.
+#define _GAMMA 2.2
 
 static uint8_t _brightness;                    //Variables for font and background brightness and also for delay between shifts and shift (scroll) step.
 static uint8_t _backBrightness;
@@ -35,6 +36,7 @@ static uint8_t** picTxtBuffer;                 //Variable for pointing on addres
 static uint16_t *posBufferX;                   //Variable for pointing on x cooridinates of each picture
 static uint16_t *posBufferY;                   //Variable for pointing on y cooridinates of each picture
 static uint8_t noOfPics;                       //Variable that keep number of pictures on screen.
+static uint8_t _frameCount;                    //Variable that keeps track on what frame buffer is displayed on screen.
 
 
 static void writeMessage();                    //Function that makes scrolling text on screen (called from timer).
@@ -55,6 +57,7 @@ class Social_Display {
              void scrollPicture(uint8_t* p, int _ms, int _stp);    //Function writes picture on screen with scrolling.
              void scrollTxtAndPics(char* txt, uint8_t** p, uint16_t* picsPos_x, uint16_t* picsPos_y, uint8_t n, int _ms, int _stp, int _rep);
              int repeatCount();                                    //Function return how much times message has been displayed
+             void picture8Bit(uint8_t* p, int xSize, int ySize, int x0, int y0, uint8_t bright);    //Function that removes everything from screen and displays a 8bit gray scale image.
              
              int wifiNetwork(const char* _ssid, const char* _pass);                            //Funcion connects to WLAN network.
              int webPage(char* web, char* url, int port, int _ms, int _stp, int _rep);         //Function opens web page and displays text on LED matrix.

@@ -28,15 +28,18 @@ void writeMessage() {
     return;
   }
   
+  matrixL.setFrame((_frameCount&1)+1);               //Use FRAME 1 and FRAME 2 buffer in display for displaying images. We are using this method of double buffernig to reduce picure ficker.
+  matrixR.setFrame((_frameCount&1)+1);                //While we are writing in one buffer (frame), we are displaying second, and in next iterration, we are writing in second, and displaying first.
+  matrixL.fillRect(0, 0, 16, 9, _backBrightness);     //Delete everything from screen, using filled rect. that has same color (Brightness) sa background color.
+  matrixR.fillRect(0, 0, 16, 9, _backBrightness);
   matrixL.setCursor(_position, 0);            //Set cursor at the start of the display.
   matrixL.print(msgBuffer);                   //Send text to the left side of display (becouse display is made form 2 seperate LED matrix drivers that are not chained together).
   matrixR.setCursor(_position - 16, 0);       //Set cursor offseted by the size of first display driver (on the left side).
   matrixR.print(msgBuffer);                   //Send text to the right side of display.
-  for (int i = 0; i < _step / 6; i++); {      //If scroll step is too big, part of previous screen stays. So, we put some spaces at the end of string just to erase it. :)
-    matrixL.print(" ");
-    matrixR.print(" ");
-  }
+  matrixL.displayFrame((_frameCount&1)+1);    //Display data that is written into buffer.
+  matrixR.displayFrame((_frameCount&1)+1);
   _position -= _step;                         //Increment counter for scrolling.
+  _frameCount++;                              //Increment variable that keeps track which frame is displayed.
 }
 
 void writePicture () {
@@ -45,10 +48,15 @@ void writePicture () {
     _messageRepeats++;                              //And also, increment variable that keeps track of how many times picture has been repeated on display.
   }
   
-  matrixL.drawBitmap(_position + _step, 0, pictBuffer, 8, 8, _backBrightness);     //Erase previous position of picture on both displays making that picture same level of brightness as background.
-  matrixR.drawBitmap(_position + _step - 16, 0, pictBuffer, 8, 8, _backBrightness);
+  matrixL.setFrame((_frameCount&1)+1);                //Use FRAME 1 and FRAME 2 buffer in display for displaying images. We are using this method of double buffernig to reduce picure ficker.
+  matrixR.setFrame((_frameCount&1)+1);                //While we are writing in one buffer (frame), we are displaying second, and in next iterration, we are writing in second, and displaying first.
+  matrixL.fillRect(0, 0, 16, 9, _backBrightness);     //Delete everything from screen, using filled rect. that has same color (Brightness) sa background color.
+  matrixR.fillRect(0, 0, 16, 9, _backBrightness);
   matrixL.drawBitmap(_position, 0, pictBuffer, 8, 8, _brightness);                 //Write picture to dispaly. Watchout! Picture that has to be written to right side of matrix should be shifted by the size of left LED matrix coltroler.
   matrixR.drawBitmap(_position - 16, 0, pictBuffer, 8, 8, _brightness);
+  matrixL.displayFrame((_frameCount&1)+1);                             //Display data that is written into buffer.
+  matrixR.displayFrame((_frameCount&1)+1);
+  _frameCount++;                                                       //Increment variable that keeps track which frame is displayed.
   _position -= _step;                                                              //Increment counter for scrolling.                   
 }
 
@@ -64,18 +72,19 @@ void writeTextAndPic() {
     return;
   }
   
+  matrixL.setFrame((_frameCount&1)+1);
+  matrixR.setFrame((_frameCount&1)+1);
+  matrixL.fillRect(0, 0, 16, 9, _backBrightness);     //Delete everything from screen, using filled rect. that has same color (Brightness) sa background color.
+  matrixR.fillRect(0, 0, 16, 9, _backBrightness);
   matrixL.setCursor(_position, 0);            //Set cursor at the start of the display.
   matrixL.print(msgBuffer);                   //Send text to the left side of display (becouse display is made form 2 seperate LED matrix drivers that are not chained together).
   matrixR.setCursor(_position - 16, 0);       //Set cursor offseted by the size of first display driver (on the left side).
   matrixR.print(msgBuffer);                   //Send text to the right side of display.
-  for (int i = 0; i < _step / 6; i++); {      //If scroll step is too big, part of previous screen stays. So, we put some spaces at the end of string just to erase it. :)
-    matrixL.print(" ");
-    matrixR.print(" ");
-  }
+  matrixL.displayFrame((_frameCount&1)+1);
+  matrixR.displayFrame((_frameCount&1)+1);
+  _frameCount++;
 
   for (int i = 0; i < noOfPics; i++) {
-    matrixL.drawBitmap(_position + _step + posBufferX[i], posBufferY[i], picTxtBuffer[i], 8, 8, _backBrightness);           //Erase previous position of picture on both displays making that picture same level of brightness as background.
-    matrixR.drawBitmap(_position + _step - 16 + posBufferX[i], posBufferY[i], picTxtBuffer[i], 8, 8, _backBrightness);
     matrixL.drawBitmap(_position + posBufferX[i], posBufferY[i], picTxtBuffer[i], 8, 8, _brightness);                       //Write picture to dispaly. Watchout! Picture that has to be written to right side of matrix should be shifted by the size of left LED matrix coltroler.
     matrixR.drawBitmap(_position - 16 + posBufferX[i], posBufferY[i], picTxtBuffer[i], 8, 8, _brightness);                  //And also shift it by position of the desiered location of picture.
   }
@@ -118,20 +127,21 @@ void Social_Display::brightness(uint8_t _fontLight, uint8_t _backingLight) {
 
 //--------------------------------------FUNCTION FOR WRITING MESSAGE--------------------------------------
 void Social_Display::message(char* msg, int _ms, int _stp, int _rep) {
-  if(_ms < 10 || _stp < 1 || _rep < -1) return;   //It doesn't make any sense to make delay less than 10 ms, especially negative one and step smaller than 1, so if that happens, return.
+  if(_ms < 90 ) _ms = 90;
+  if(_stp < 1 ) _stp = 1;
+  if(_rep < -1) _rep = -1;//It doesn't make any sense to make delay less than 10 ms, especially negative one and step smaller than 1, so if that happens, set preset values.
   if(strlen(msg) > _BUFFERSIZE) return;   //If size of string is much bigger of size of buffer, do not do anything more, it will overflow.
   _step = _stp;                                   //Save what user want for delay and step for scrolling.
   _pause = _ms;
   _repeats = _rep;
   _dispMode = 1;
+  _frameCount = 0;
   
-  matrixL.fillRect(0, 0, 16, 9, _backBrightness);     //Delete everything from screen, using filled rect. that has same color (Brightness) sa background color.
-  matrixR.fillRect(0, 0, 16, 9, _backBrightness);
   
   _messageRepeats = 0;                //If there is a new message, reset counter!
   _position = 32;                     //Calling this function means that user whats to write some new message, so bring scroll counter to start and clear buffer for message.
   
-  for (int i = 0; i < _BUFFERSIZE; i++) {
+  for (int i = 0; i < _BUFFERSIZE; i++) {       //Clean up whole message buffer.
     msgBuffer[i] = 0;
   }
 
@@ -145,8 +155,8 @@ void Social_Display::message(char* msg, int _ms, int _stp, int _rep) {
   if(_repeats) {                                        //If number of repeats is zero, that means that text is not scrolling, do not update screen.
     updateLED.attach_ms(_pause, writeMessage);          //Setup timer with new parameters for new message.
   }
-  matrixL.drawLine(0, 8, 15, 8, _backBrightness);     //Draw line at the end of screen. This is because Adafruit library uses 8x6 pixels for fonts and height of out display is 9 pixels.
-  matrixR.drawLine(0, 8, 15, 8, _backBrightness);
+  //matrixL.drawLine(0, 8, 15, 8, _backBrightness);     //Draw line at the end of screen. This is because Adafruit library uses 8x6 pixels for fonts and height of out display is 9 pixels.
+  //matrixR.drawLine(0, 8, 15, 8, _backBrightness);
   if(!_repeats) {                                     //If repeats are equal to zero, that means that we do not want to scroll it, we just want to print message with picture.
     _repeats = 1;
     _position = 0;                                    //In that case, set position to start of the screen.
@@ -187,18 +197,17 @@ int Social_Display::repeatCount() {                  //Function retrun how many 
 //---------------------------------------FUNCTION FOR DISPLAYING PICTURES--------------------------------------
 
 void Social_Display::picture(uint8_t* p, int posX, int posY) {
-  matrixL.fillRect(0, 0, 16, 9, _backBrightness);              //Delete everything from screen by writing filled rect on screen that has same intensity as background.
-  matrixR.fillRect(0, 0, 16, 9, _backBrightness);
+  _frameCount = 0;                                             //Reset variable that keeps track on which frame (in LED Matrix IC) is currently displayed.
   matrixL.drawBitmap(posX, posY, p, 8, 8, _brightness);        //Write picture on screen (keeping on mind that picture has to be written on both LED Matrix drivers with offset on one).
   matrixR.drawBitmap(posX - 16, posY, p, 8, 8, _brightness);
 }
 
 void Social_Display::scrollPicture(uint8_t* p, int _ms, int _stp) {
-  if(_ms < 10 || _stp < 1) return;                   //It doesn't make any sense to make delay less than 10 ms, especially negative one and step smaller than 1, so if that happens, return.
+  if(_ms < 90) _ms = 90;                             //It doesn't make any sense to make delay less than 10 ms, especially negative one and step smaller than 1, so if that happens, set preset values.
+  if(_stp < 1) _stp = 1;
+  
   int xSize = 8;                                     //Picture that has to be written on screen has to be 8x8 pixels.
   _dispMode = 2;
-  matrixL.fillRect(0, 0, 16, 9, _backBrightness);    //Delete everything from screen by writing filled rect on screen that has same intensity as background.
-  matrixR.fillRect(0, 0, 16, 9, _backBrightness);
   _step = _stp;                                      //Save value for scroll step and delay between steps.
   _pause = _ms;
 
@@ -213,7 +222,11 @@ void Social_Display::scrollPicture(uint8_t* p, int _ms, int _stp) {
 
 //--------------------------------------FUNCTIONS FOR DISPLAYING TEXT AND PICTURES AT THE SAME TIME--------------------------------------
 void Social_Display::scrollTxtAndPics(char* txt, uint8_t** p, uint16_t* picsPos_x, uint16_t* picsPos_y, uint8_t n, int _ms, int _stp, int _rep) {
-  if(_ms < 10 || _stp < 1 || _rep < -1 || n < 1) return;   //It doesn't make any sense to make delay less than 10 ms, especially negative one and step smaller than 1, so if that happens, return.
+  if(_ms < 90 ) _ms = 90;                    //It doesn't make any sense to make delay less than 10 ms, especially negative one and step smaller than 1, so if that happens, set preset values.
+  if(_stp < 1 ) _stp = 1;
+  if(_rep < -1) _rep = -1;
+  if(n<1) return;
+  
   if(strlen(txt) > _BUFFERSIZE) return;   //If size of string is much bigger of size of buffer, do not do anything more, it will overflow.
   _step = _stp;                                            //Save what user want for delay and step for scrolling.
   _pause = _ms;
@@ -221,9 +234,7 @@ void Social_Display::scrollTxtAndPics(char* txt, uint8_t** p, uint16_t* picsPos_
   _dispMode = 3;                                           //Set mode for displaying message and thex at the same time.     
   _messageRepeats = 0;                                     //If there is a new message, reset counter!
   int16_t _max;                                            //Variable that we are using for calculation of maximal scroll position.
-  
-  matrixL.fillRect(0, 0, 16, 9, _backBrightness);          //Delete everything from screen by writing filled rect on screen that has same intensity as background.
-  matrixR.fillRect(0, 0, 16, 9, _backBrightness);
+  _frameCount = 0;
 
   _position = 32;                     //Calling this function means that user whats to write some new message, so bring scroll counter to start and clear buffer for message.
   for (int i = 0; i < _BUFFERSIZE; i++) {
@@ -258,6 +269,31 @@ void Social_Display::scrollTxtAndPics(char* txt, uint8_t** p, uint16_t* picsPos_
   }
 }
 
+//--------------------------------------FUNCTION FOR DISPLAYING GREYSCALE WTIH GAMMA CORRECTION-----------------
+void Social_Display::picture8Bit(uint8_t* p, int xSize, int ySize, int x0, int y0, uint8_t bright) {
+  updateLED.detach();                                //For now, we can display only image on screen, so we have to remove everything on screen and block future updates.
+  matrixL.setFrame(3);                               //Set a new frame on screen. Basicly this is a memory place where we will write our data and after we wrote all our data, we can display it without flickering.
+  matrixR.setFrame(3);                               //Do than on both LED Matrix ICs
+  matrixL.fillRect(0, 0, 16, 9, _backBrightness);    //Delete everything from screen by writing filled rect on screen that has same intensity as background.
+  matrixR.fillRect(0, 0, 16, 9, _backBrightness);
+  int endPosX = xSize + x0;                          //Calculate end position for x cooridinate (needed for x position offest).
+
+  int n = 0;                                         //Variable for indexing picture array
+  for (int j = 0; j < ySize; j++) {                  //First select row, then write data into seleced row
+    for (int i = 0+x0; i < endPosX; i++) {
+      if (i > 15) {                                  //If we are passed first LED Matrix IC, then we have to write next data into second (right) IC.
+        matrixR.drawPixel(i - 16, j + y0, (uint8_t)(bright * pow(p[n] / 255.0, _GAMMA)));
+      } else {
+        matrixL.drawPixel(i, j + y0, (uint8_t)(bright * pow(p[n] / 255.0, _GAMMA)));     //Otherwise write picure data into first (left) Matrix IC
+      }
+      n++;                   //Increment variable for array indexing
+    }
+  }
+
+  matrixL.displayFrame(3);   //Done writing data? Nice, now display that! :)
+  matrixR.displayFrame(3);
+}
+
 //--------------------------------------FUNCTIONS FOR WEB--------------------------------------
 int Social_Display::wifiNetwork(const char* _ssid, const char* _pass) {
     int retry = 10;                              //Number of retrys for connectin on WLAN network.
@@ -277,7 +313,7 @@ int Social_Display::wifiNetwork(const char* _ssid, const char* _pass) {
 
 int Social_Display::webPage(char* web, char* url, int port, int _ms, int _stp, int _rep) {
   if (!wlanSuccess) return 0;                          //If we are not connected to WiFi, return 0, becouse we can't loar web page if we do not have at least WiFi connection.
-  if(_ms < 10 || _stp < 1) return 0;                   //It doesn't make any sense to make delay less than 10 ms, especially negative one and step smaller than 1, so if that happens, return.
+  if(_ms < 90 || _stp < 1) return 0;                   //It doesn't make any sense to make delay less than 10 ms, especially negative one and step smaller than 1, so if that happens, return.
   
   WiFiClient client;
   char webText[_BUFFERSIZE];                                           //Buffer for text that we downloaded from internet.
